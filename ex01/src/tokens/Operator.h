@@ -32,7 +32,7 @@ public:
 	bool operator<=(const Operator &rhs) const;
 	bool operator>=(const Operator &rhs) const;
 
-	Number *perform(const Number &n1, const Number &n2) const;
+	Number perform(const Number &n1, const Number &n2) const;
 
 	~Operator();
 

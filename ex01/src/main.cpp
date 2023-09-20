@@ -16,13 +16,17 @@
 #include "Interpreter.h"
 
 int main(int ac, char **av) {
-	assert(ac == 2 && "There should be only 1 argument, which is expression");
+	assert(ac == 2 && "There should be only 1 argument, which is an RPN"
+                      "expression");
 	std::string expression(av[1]);
-	Interpreter tokens(expression);
-	tokens.make_tokens();
-	std::cout << "Tokens: " <<  tokens << " " << std::endl;
-	tokens.make_postfix();
-	std::cout << "Postfix: " <<  tokens << " " << std::endl;
-	std::cout << "Result : " << tokens.evaluate() << std::endl;
+    try {
+        Interpreter tokens(expression);
+        tokens.make_tokens();
+        if (PRINT)
+            std::cout << "Tokens: " << tokens << " " << std::endl;
+        std::cout << tokens.evaluate() << std::endl;
+    } catch (const std::exception &e) {
+        std::cerr << e.what() << std::endl;
+    }
 	return 0;
 }

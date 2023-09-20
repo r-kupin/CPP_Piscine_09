@@ -13,7 +13,6 @@
 #ifndef EX01_NUMBER_H
 #define EX01_NUMBER_H
 
-
 #include <ostream>
 #include "Token.h"
 

@@ -19,8 +19,11 @@
 #include "tokens/Token.h"
 #include "MutantStack.h"
 #include "tokens/Number.h"
-#include "tokens/Parenthesis.h"
 #include "tokens/Operator.h"
+
+#ifndef PRINT
+# define PRINT false
+#endif
 
 const static unsigned long kNotFound = std::string::npos;
 
@@ -36,7 +39,6 @@ struct Interpreter {
 	virtual ~Interpreter();
 
 	void make_tokens();
-	void make_postfix();
 	int evaluate();
 	friend std::ostream &
 	operator<<(std::ostream &os, const Interpreter &interpreter);
@@ -46,7 +48,6 @@ protected:
 	int GetOpenBraces() const;
 	int GetCloseBraces() const;
 	int GetNumbers() const;
-	const std::deque<Token *> &GetTokens() const;
 
 private:
 	bool InputIsCorrect();

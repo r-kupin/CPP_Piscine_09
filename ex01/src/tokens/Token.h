@@ -13,6 +13,9 @@
 #ifndef EX01_TOKEN_H
 #define EX01_TOKEN_H
 
+#ifndef PRINT
+# define PRINT false
+#endif
 
 #include <ostream>
 
@@ -26,9 +29,7 @@ public:
 
 	enum Type {
 		NumberType,
-		OperatorType,
-		ParenthesisOpen,
-		ParenthesisClose
+		OperatorType
 	};
 
 	Token() {};

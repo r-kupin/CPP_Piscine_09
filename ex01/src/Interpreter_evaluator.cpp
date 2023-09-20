@@ -14,45 +14,55 @@
 #include <vector>
 #include "Interpreter.h"
 
-void print_stack(MutantStack<Number *> &calc_stack) {
+void print_stack(MutantStack<Number> &calc_stack) {
 	std::cout << "| ST";
-	for (MutantStack<Number *>::reverse_iterator iterator = calc_stack.rbegin();
+	for (MutantStack<Number>::reverse_iterator iterator = calc_stack.rbegin();
 			iterator != calc_stack.rend();
 			++iterator) {
-		std::cout << " " << (*iterator)->GetNumber();
+		std::cout << " " << (*iterator).GetNumber();
 	}
 	std::cout << "]" << std::endl;
 }
 
-void perform_operation(Operator *front_op, MutantStack<Number*> &calc_stack) {
-	Number *op1, *op2;
-
-	op2 = dynamic_cast<Number*>(calc_stack.top());
-	calc_stack.pop();
-	op1 = dynamic_cast<Number*>(calc_stack.top());
-	calc_stack.pop();
-	calc_stack.push(front_op->perform(*op1, *op2));
-	delete op1;
-	delete op2;
-	delete front_op;
+bool perform_operation(const Operator& front_op, MutantStack<Number> &calc_stack) {
+    Number op2, op1;
+    if (!calc_stack.empty()) {
+        op2 = calc_stack.top();
+        calc_stack.pop();
+    } else {
+        return false;
+    }
+    if (!calc_stack.empty()) {
+        op1 = calc_stack.top();
+        calc_stack.pop();
+    } else {
+        return false;
+    }
+    calc_stack.push(front_op.perform(op1, op2));
+	return true;
 }
 
 int Interpreter::evaluate() {
-	MutantStack<Number *> calc_stack;
 	int result;
+    MutantStack<Number> calc_stack;
 
-	for (Token *front = tokens_.front(); !tokens_.empty();
-		 tokens_.pop_front(), front = tokens_.front()) {
-		front->operator<<(std::cout << "I ") << " | OP ";
+	for (Token *front = *tokens_.begin(); !tokens_.empty();
+		tokens_.pop_front(), front = *tokens_.begin()) {
+		if (PRINT)
+			front->operator<<(std::cout << "I ") << " | OP ";
 		if (front->GetType() == Token::NumberType) {
-			std::cout << "Push ";
-			calc_stack.push(dynamic_cast<Number*>(front));
+			if (PRINT)
+				std::cout << "Push ";
+			calc_stack.push(*dynamic_cast<Number *>(front));
 		} else {
-			perform_operation(dynamic_cast<Operator*>(front), calc_stack);
+			if (!perform_operation(*dynamic_cast<Operator *>(front),
+								   calc_stack))
+				throw WrongInputException();
 		}
-		print_stack(calc_stack);
+        if (PRINT)
+            print_stack(calc_stack);
+		delete front;
 	}
-	result = calc_stack.top()->GetNumber();
-	delete calc_stack.top();
+	result = calc_stack.top().GetNumber();
 	return result;
 }
