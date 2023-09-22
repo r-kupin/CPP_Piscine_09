@@ -10,12 +10,78 @@
 /*                                                                            */
 /******************************************************************************/
 
+#include <fstream>
 #include <iostream>
+#include <vector>
+#include "BitcoinExchange.h"
+
+bool open_files(std::ifstream &input, std::ifstream &data, std::string filename) {
+	input.exceptions(std::ofstream::badbit | std::ofstream::failbit);
+	data.exceptions(std::ofstream::badbit | std::ofstream::failbit);
+	try {
+		input.open(filename.c_str());
+		data.open(kDatabaseFile.c_str());
+	} catch (const std::iostream::failure& e) {
+		if (data.fail()) {
+			std::cerr << "Error: Failed to open database file." << kDatabaseFile << std::endl;
+			input.close();
+		} else {
+			std::cerr << "Error: Failed to open input file." << filename << std::endl;
+		}
+		return false;
+	}
+	return true;
+}
+
+bool read_from_file(std::ifstream &input, std::vector<std::string> &db) {
+	bool success = true;
+
+	input.exceptions(std::ifstream::badbit);
+	try {
+		for (std::string line; getline(input, line); db.push_back(line));
+	} catch (const std::iostream::failure& e) {
+		std::cerr << "Error: Read failure." << std::endl;
+		success = false;
+	}
+	input.clear();
+	input.close();
+	return success;
+}
+
+std::string get_delimiter(std::string &first_line) {
+	if (first_line.find("date") == 0 && first_line.find("value") != std::string::npos)
+		return first_line.substr(first_line.find("value") - std::string("date").size(), first_line.find("value"));
+	else
+		return "";
+}
 
 int main(int ac, char **av) {
     if (ac != 2) {
-        std::cerr << "Error: wrong amount of arguments." << std::endl;
-    } else if () {
-        
-    }
+		std::cerr << "Error: wrong amount of arguments." << std::endl;
+	} else {
+		std::ifstream input, data;
+		std::vector<std::string> input_arr, db_arr;
+
+		if (open_files(input, data, av[1]) &&
+			(read_from_file(input, input_arr) & read_from_file(data, db_arr))) {
+			try {
+				BitcoinExchange be(db_arr);
+				std::string delimiter = get_delimiter(input_arr[0]);
+				for (std::vector<std::string>::iterator it = input_arr.begin() + 1;
+					 it != input_arr.end(); ++it) {
+					try {
+						std::cout << be.Querry(*it, delimiter) << std::endl;
+					} catch (const BitcoinExchange::BadInputException &e) {
+						std::cerr << e.what() << *it << std::endl;
+					} catch (const BitcoinExchange::InputFileCorruptedException &e) {
+						std::cerr << e.what() << std::endl;
+					}
+				}
+				return 0;
+			} catch (const BitcoinExchange::DatabaseFileCorruptedError &e) {
+				std::cerr << e.what() << std::endl;
+			}
+		}
+	}
+	return 1;
 }

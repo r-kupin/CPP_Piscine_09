@@ -30,3 +30,7 @@ Date &Date::operator=(const Date &other) {
 Date::~Date() {
 
 }
+
+bool Date::IsCorrectDataString(const std::string &str) {
+	return false;
+}

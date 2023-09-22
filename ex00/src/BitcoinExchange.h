@@ -14,17 +14,49 @@
 #define EX00_BITCOINEXCHANGE_H
 
 
+#include <string>
+#include <map>
+#include "Date.h"
+
+static const std::string kDatabaseFile = "resources/data.csv";
+
 class BitcoinExchange {
 public:
+
+	class DatabaseFileCorruptedError : public std::exception {
+	public:
+		const char *what() const;
+	};
+
+	class InputFileCorruptedException : public std::exception {};
+
+	class NegativeNumberException : public InputFileCorruptedException {
+	public:
+		const char *what() const override;
+	};
+	class TooBigNumberException : public InputFileCorruptedException {
+	public:
+		const char *what() const override;
+	};
+	class BadInputException : public InputFileCorruptedException {
+	public:
+		const char *what() const override;
+	};
+
     BitcoinExchange();
 
     BitcoinExchange(const BitcoinExchange &);
 
-    BitcoinExchange &operator=(const BitcoinExchange &);
+	BitcoinExchange(std::vector<std::string> db);
+
+	BitcoinExchange &operator=(const BitcoinExchange &);
 
     ~BitcoinExchange();
 
+    std::string Querry(const std::string &str, const std::string &delimiter);
+
 private:
+	std::map<Date, float> table_;
 };
 
 

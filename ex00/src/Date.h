@@ -14,13 +14,19 @@
 #define EX00_LIB_DATE_H
 
 
+#include <string>
+
 class Date {
 public:
+	static bool IsCorrectDataString(const std::string &str);
+
     Date();
 
     Date(const Date &);
 
-    Date &operator=(const Date &);
+	Date(const std::string &basicString);
+
+	Date &operator=(const Date &);
 
     ~Date();
 
