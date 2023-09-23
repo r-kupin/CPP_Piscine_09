@@ -25,29 +25,29 @@ public:
 
 	class DatabaseFileCorruptedError : public std::exception {
 	public:
-		const char *what() const;
+		const char *what() const throw();
 	};
 
 	class InputFileCorruptedException : public std::exception {};
 
 	class NegativeNumberException : public InputFileCorruptedException {
 	public:
-		const char *what() const override;
+		const char *what() const throw();
 	};
 	class TooBigNumberException : public InputFileCorruptedException {
 	public:
-		const char *what() const override;
+		const char *what() const throw();
 	};
 	class BadInputException : public InputFileCorruptedException {
 	public:
-		const char *what() const override;
+		const char *what() const throw();
 	};
 
     BitcoinExchange();
 
     BitcoinExchange(const BitcoinExchange &);
 
-	BitcoinExchange(std::vector<std::string> db);
+	BitcoinExchange(std::vector<std::string> db, const std::string &delimiter);
 
 	BitcoinExchange &operator=(const BitcoinExchange &);
 

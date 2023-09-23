@@ -48,9 +48,9 @@ bool read_from_file(std::ifstream &input, std::vector<std::string> &db) {
 	return success;
 }
 
-std::string get_delimiter(std::string &first_line) {
-	if (first_line.find("date") == 0 && first_line.find("value") != std::string::npos)
-		return first_line.substr(first_line.find("value") - std::string("date").size(), first_line.find("value"));
+std::string get_delimiter(std::string &first_line, std::string before, std::string after) {
+	if (first_line.find(before) == 0 && first_line.find(after) != std::string::npos)
+		return first_line.substr(first_line.find(after) - std::string(before).size(), first_line.find(after));
 	else
 		return "";
 }
@@ -65,12 +65,13 @@ int main(int ac, char **av) {
 		if (open_files(input, data, av[1]) &&
 			(read_from_file(input, input_arr) & read_from_file(data, db_arr))) {
 			try {
-				BitcoinExchange be(db_arr);
-				std::string delimiter = get_delimiter(input_arr[0]);
+				std::string delimiter_input = get_delimiter(input_arr[0], "date", "value");
+				std::string delimiter_db = get_delimiter(input_arr[0], "date", "value");
+				BitcoinExchange be(db_arr, delimiter_db);
 				for (std::vector<std::string>::iterator it = input_arr.begin() + 1;
 					 it != input_arr.end(); ++it) {
 					try {
-						std::cout << be.Querry(*it, delimiter) << std::endl;
+						std::cout << be.Querry(*it, delimiter_input) << std::endl;
 					} catch (const BitcoinExchange::BadInputException &e) {
 						std::cerr << e.what() << *it << std::endl;
 					} catch (const BitcoinExchange::InputFileCorruptedException &e) {
