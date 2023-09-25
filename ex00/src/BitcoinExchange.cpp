@@ -21,36 +21,39 @@ BitcoinExchange::BitcoinExchange() {}
 
 BitcoinExchange::BitcoinExchange(std::vector<std::string> db, const std::string &delimiter) {
 	for (std::vector<std::string>::iterator it = db.begin() + 1; it != db.end(); ++it) {
-		unsigned long delim_pos = (*it).find_first_of(delimiter);
-		std::string date_str = (*it).substr(0, delim_pos);
-		std::string val_str((*it).c_str() + delim_pos + delimiter.size());
-		double value = std::strtod((*it).c_str() + delim_pos, 0);
+        if (!(*it).empty()) {
+            unsigned long delim_pos = (*it).find_first_of(delimiter);
+            std::string date_str = (*it).substr(0, delim_pos);
+            std::string val_str = (*it).substr(delim_pos + delimiter.length());
+            double value = std::atof(val_str.c_str());
 
-		std::cout << *it << " | "<< delimiter << " | " << date_str << " | " << val_str << " | " << value << " | " << std::endl;
-		
-		if (date_str.empty() || val_str.empty() || !Date::IsCorrectDataString(date_str) ||
-			value > 1000 || value < 0)
-			throw DatabaseFileCorruptedError();
-		
-		table_.insert(std::pair<Date, float>(Date(date_str), value));
+            if (date_str.empty() || val_str.empty() ||
+                !Date::IsCorrectDataString(date_str) ||
+                value < 0)
+                throw DatabaseFileCorruptedError();
+
+            table_.insert(std::pair<Date, float>(Date(date_str), value));
+        }
 	}
 }
 
-BitcoinExchange::BitcoinExchange(const BitcoinExchange &other) {}
+BitcoinExchange::BitcoinExchange(const BitcoinExchange &other)
+: table_(other.table_){}
 
 BitcoinExchange &BitcoinExchange::operator=(const BitcoinExchange &other) {
     if (this == &other)
         return *this;
+    table_ = other.table_;
     return *this;
 }
 
 BitcoinExchange::~BitcoinExchange() {}
 
 std::string BitcoinExchange::Querry(const std::string &str, const std::string &delimiter) {
-	unsigned long delim_pos = str.find(delimiter);
+	unsigned long delim_pos = str.find_first_of(delimiter);
 	std::string date_str = str.substr(0, delim_pos);
-	std::string amount_str(str.c_str() + delim_pos + delimiter.size());
-	double amount = std::strtod(str.c_str() + delim_pos, 0);
+	std::string amount_str = str.substr(delim_pos + delimiter.length());
+	double amount = std::atof(amount_str.c_str());
 
 	if (date_str.empty() || amount_str.empty() || !Date::IsCorrectDataString(date_str))
 		throw BadInputException();
