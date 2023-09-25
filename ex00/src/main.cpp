@@ -45,6 +45,10 @@ bool read_from_file(std::ifstream &input, std::vector<std::string> &db) {
 	}
 	input.clear();
 	input.close();
+    if (db.empty()) {
+        std::cerr << "Error: Empty file." << std::endl;
+        success = false;
+    }
 	return success;
 }
 

@@ -11,7 +11,6 @@
 /******************************************************************************/
 
 #include <iostream>
-#include <vector>
 #include "Interpreter.h"
 
 void print_stack(MutantStack<Number> &calc_stack) {
