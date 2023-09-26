@@ -44,18 +44,25 @@ public:
 	};
 
     BitcoinExchange();
-
     BitcoinExchange(const BitcoinExchange &);
-
-	BitcoinExchange(std::vector<std::string> db, const std::string &delimiter);
 
 	BitcoinExchange &operator=(const BitcoinExchange &);
 
     ~BitcoinExchange();
 
-    std::string Querry(const std::string &str, const std::string &delimiter);
+    void setDbFormat(const std::string &dbFormat);
+    void setInputFormat(const std::string &inputFormat);
 
+    void Querry(const std::string &str);
+    void Insert(const std::string &str);
+
+    bool DBisEmpty() const;
+
+    static std::string GetDelimiter(const std::string &first_line,
+                                    std::string before, std::string after);
 private:
+    std::string db_delimiter_;
+    std::string imp_delimiter_;
 	std::map<Date, float> table_;
 };
 

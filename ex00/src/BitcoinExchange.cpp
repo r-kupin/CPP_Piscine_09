@@ -10,32 +10,11 @@
 /*                                                                            */
 /******************************************************************************/
 
-#include <vector>
 #include <cstdlib>
-#include <sstream>
 #include <iostream>
 #include "BitcoinExchange.h"
 
 BitcoinExchange::BitcoinExchange() {}
-
-
-BitcoinExchange::BitcoinExchange(std::vector<std::string> db, const std::string &delimiter) {
-	for (std::vector<std::string>::iterator it = db.begin() + 1; it != db.end(); ++it) {
-        if (!(*it).empty()) {
-            unsigned long delim_pos = (*it).find_first_of(delimiter);
-            std::string date_str = (*it).substr(0, delim_pos);
-            std::string val_str = (*it).substr(delim_pos + delimiter.length());
-            double value = std::atof(val_str.c_str());
-
-            if (date_str.empty() || val_str.empty() ||
-                !Date::IsCorrectDataString(date_str) ||
-                value < 0)
-                throw DatabaseFileCorruptedError();
-
-            table_.insert(std::pair<Date, float>(Date(date_str), value));
-        }
-	}
-}
 
 BitcoinExchange::BitcoinExchange(const BitcoinExchange &other)
 : table_(other.table_){}
@@ -49,23 +28,68 @@ BitcoinExchange &BitcoinExchange::operator=(const BitcoinExchange &other) {
 
 BitcoinExchange::~BitcoinExchange() {}
 
-std::string BitcoinExchange::Querry(const std::string &str, const std::string &delimiter) {
-	unsigned long delim_pos = str.find_first_of(delimiter);
-	std::string date_str = str.substr(0, delim_pos);
-	std::string amount_str = str.substr(delim_pos + delimiter.length());
-	double amount = std::atof(amount_str.c_str());
+std::string BitcoinExchange::GetDelimiter(const std::string &first_line,
+                                          std::string before,
+                                          std::string after) {
+    if (first_line.find(before) == 0 &&
+        first_line.find(after) != std::string::npos) {
+        return first_line.substr(before.size(),
+                                 first_line.size() - (before.size() + after.size()));
+    } else
+        return "";
+}
 
-	if (date_str.empty() || amount_str.empty() || !Date::IsCorrectDataString(date_str))
-		throw BadInputException();
-	if (amount > 1000)
-		throw TooBigNumberException();
-	if (amount < 0)
-		throw NegativeNumberException();
-	const std::map<Date, float>::iterator &closest_date_it = table_.lower_bound(Date(date_str));
-	double value = (*closest_date_it).second * amount;
-	std::ostringstream os;
-	os << date_str << " => " << amount_str << " = " << value;
-	return  os.str();
+void BitcoinExchange::Insert(const std::string &str) {
+    if (!str.empty()) {
+        if (db_delimiter_.empty()) {
+            db_delimiter_ = GetDelimiter(str, "date", "exchange_rate");
+            if (db_delimiter_.empty())
+                throw DatabaseFileCorruptedError();
+        } else {
+            unsigned long delim_pos = str.find_first_of(db_delimiter_);
+            std::string date_str = str.substr(0, delim_pos);
+            std::string val_str = str.substr(delim_pos + db_delimiter_.length());
+            double value = std::atof(val_str.c_str());
+
+            if (date_str.empty() || val_str.empty() ||
+                !Date::IsCorrectDataString(date_str) ||
+                value < 0)
+                throw DatabaseFileCorruptedError();
+
+            table_.insert(std::pair<Date, float>(Date(date_str), value));
+        }
+    }
+}
+
+void BitcoinExchange::Querry(const std::string &str) {
+    if (!str.empty()) {
+        if (imp_delimiter_.empty()) {
+            imp_delimiter_ = GetDelimiter(str, "date", "value");
+            if (imp_delimiter_.empty())
+                throw DatabaseFileCorruptedError();
+        } else {
+            unsigned long delim_pos = str.find_first_of(imp_delimiter_);
+            std::string date_str = str.substr(0, delim_pos);
+            std::string amount_str = str.substr(delim_pos + imp_delimiter_.length());
+            double amount = std::atof(amount_str.c_str());
+
+            if (date_str.empty() || amount_str.empty() ||
+                !Date::IsCorrectDataString(date_str))
+                throw BadInputException();
+            if (amount > 1000)
+                throw TooBigNumberException();
+            if (amount < 0)
+                throw NegativeNumberException();
+            const std::map<Date, float>::iterator &closest_date_it = table_.lower_bound(
+                    Date(date_str));
+            double value = (*closest_date_it).second * amount;
+            std::cout << date_str << " => " << amount_str << " = " << value << std::endl;
+        }
+    }
+}
+
+bool BitcoinExchange::DBisEmpty() const {
+    return table_.empty();
 }
 
 const char *BitcoinExchange::DatabaseFileCorruptedError::what() const throw() {
