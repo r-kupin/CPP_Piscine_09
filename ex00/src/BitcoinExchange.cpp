@@ -80,8 +80,14 @@ void BitcoinExchange::Querry(const std::string &str) {
                 throw TooBigNumberException();
             if (amount < 0)
                 throw NegativeNumberException();
-            const std::map<Date, float>::iterator &closest_date_it = table_.lower_bound(
-                    Date(date_str));
+            Date lookup(date_str);
+            if (table_.begin()->first > lookup)
+                throw BadInputException();
+            std::map<Date, float>::iterator closest_date_it =
+                                        table_.lower_bound(lookup);
+            if (closest_date_it == table_.end() || closest_date_it->first != lookup) {
+                --closest_date_it;
+
             double value = (*closest_date_it).second * amount;
             std::cout << date_str << " => " << amount_str << " = " << value << std::endl;
         }

@@ -15,8 +15,14 @@
 
 
 #include <string>
+#include <ostream>
 
 class Date {
+public:
+    bool operator==(const Date &rhs) const;
+
+    bool operator!=(const Date &rhs) const;
+
 public:
 	static bool IsCorrectDataString(const std::string &str);
 
@@ -38,11 +44,18 @@ public:
 
 	bool operator>=(const Date &rhs) const;
 
+    int getYear() const;
+
+    int getMonth() const;
+
+    int getDay() const;
+
 private:
 	int year_;
 	int month_;
 	int day_;
 };
 
+std::ostream &operator<<(std::ostream &os, const Date &date);
 
 #endif //EX00_LIB_DATE_H

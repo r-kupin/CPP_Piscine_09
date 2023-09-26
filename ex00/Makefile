@@ -21,7 +21,7 @@ OBJS = $(SRCS:.cpp=.o)
 
 CXX = clang++
 
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98
+CXXFLAGS = -Wall -Wextra -Werror -gdwarf-4 -std=c++98
 ASANFLAGS = -g -fsanitize=address
 
 all: $(NAME)

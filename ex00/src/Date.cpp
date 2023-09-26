@@ -75,15 +75,17 @@ bool Date::IsCorrectDataString(const std::string &str) {
 Date::~Date() {}
 
 bool Date::operator<(const Date &rhs) const {
-	if (year_ < rhs.year_)
-		return true;
-	if (rhs.year_ < year_)
-		return false;
-	if (month_ < rhs.month_)
-		return true;
-	if (rhs.month_ < month_)
-		return false;
-	return day_ < rhs.day_;
+    if (year_ < rhs.year_) {
+        return true;
+    } else if (year_ > rhs.year_) {
+        return false;
+    }
+    if (month_ < rhs.month_) {
+        return true;
+    } else if (month_ > rhs.month_) {
+        return false;
+    }
+    return day_ < rhs.day_;
 }
 
 bool Date::operator>(const Date &rhs) const {
@@ -96,4 +98,31 @@ bool Date::operator<=(const Date &rhs) const {
 
 bool Date::operator>=(const Date &rhs) const {
 	return !(*this < rhs);
+}
+
+int Date::getYear() const {
+    return year_;
+}
+
+int Date::getMonth() const {
+    return month_;
+}
+
+int Date::getDay() const {
+    return day_;
+}
+
+bool Date::operator==(const Date &rhs) const {
+    return year_ == rhs.year_ &&
+           month_ == rhs.month_ &&
+           day_ == rhs.day_;
+}
+
+bool Date::operator!=(const Date &rhs) const {
+    return !(rhs == *this);
+}
+
+std::ostream &operator<<(std::ostream &os, const Date &date) {
+    os << date.getYear() << "-" << date.getMonth() << "-" << date.getDay();
+    return os;
 }
