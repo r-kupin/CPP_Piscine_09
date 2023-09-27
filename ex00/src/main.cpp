@@ -22,10 +22,12 @@ bool open_files(std::ifstream &input, std::ifstream &data, std::string filename)
 		data.open(kDatabaseFile.c_str());
 	} catch (const std::iostream::failure& e) {
 		if (data.fail()) {
-			std::cerr << "Error: Failed to open database file." << kDatabaseFile << std::endl;
+			std::cerr << "Error: Failed to open database file." <<
+            kDatabaseFile << std::endl;
 			input.close();
 		} else {
-			std::cerr << "Error: Failed to open input file." << filename << std::endl;
+			std::cerr << "Error: Failed to open input file." <<
+            filename << std::endl;
 		}
 		return false;
 	}
