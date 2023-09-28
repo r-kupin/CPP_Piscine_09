@@ -62,36 +62,35 @@ void BitcoinExchange::Insert(const std::string &str) {
 }
 
 void BitcoinExchange::Querry(const std::string &str) {
-    if (!str.empty()) {
-        if (imp_delimiter_.empty()) {
-            imp_delimiter_ = GetDelimiter(str, "date", "value");
-            if (imp_delimiter_.empty())
-                throw DatabaseFileCorruptedError();
-        } else {
-            unsigned long delim_pos = str.find_first_of(imp_delimiter_);
-            std::string date_str = str.substr(0, delim_pos);
-            std::string amount_str = str.substr(delim_pos + imp_delimiter_.length());
-            double amount = std::atof(amount_str.c_str());
+	if (!str.empty()) {
+		if (imp_delimiter_.empty()) {
+			imp_delimiter_ = GetDelimiter(str, "date", "value");
+			if (imp_delimiter_.empty())
+				throw DatabaseFileCorruptedError();
+		} else {
+			unsigned long delim_pos = str.find_first_of(imp_delimiter_);
+			std::string date_str = str.substr(0, delim_pos);
+			std::string amount_str = str.substr(delim_pos + imp_delimiter_.length());
+			double amount = std::atof(amount_str.c_str());
 
-            if (date_str.empty() || amount_str.empty() ||
-                !Date::IsCorrectDataString(date_str))
-                throw BadInputException();
-            if (amount > 1000)
-                throw TooBigNumberException();
-            if (amount < 0)
-                throw NegativeNumberException();
-            Date lookup(date_str);
-            if (table_.begin()->first > lookup)
-                throw BadInputException();
-            std::map<Date, float>::iterator closest_date_it =
-                                        table_.lower_bound(lookup);
-            if (closest_date_it == table_.end() || closest_date_it->first != lookup) {
-                --closest_date_it;
-
-            double value = (*closest_date_it).second * amount;
-            std::cout << date_str << " => " << amount_str << " = " << value << std::endl;
-        }
-    }
+			if (date_str.empty() || amount_str.empty() ||
+				!Date::IsCorrectDataString(date_str))
+				throw BadInputException();
+			if (amount > 1000)
+				throw TooBigNumberException();
+			if (amount < 0)
+				throw NegativeNumberException();
+			Date lookup(date_str);
+			if (table_.begin()->first > lookup)
+				throw BadInputException();
+			std::map<Date, float>::iterator closest_date_it =
+					table_.lower_bound(lookup);
+			if (closest_date_it == table_.end() || closest_date_it->first != lookup)
+				--closest_date_it;
+			double value = (*closest_date_it).second * amount;
+			std::cout << date_str << " => " << amount_str << " = " << value << std::endl;
+		}
+	}
 }
 
 bool BitcoinExchange::DBisEmpty() const {
