@@ -13,14 +13,15 @@
 #ifndef EX02_PMERGEME_H
 #define EX02_PMERGEME_H
 
-
 #include <vector>
 #include <list>
 
 struct PmergeMe {
     static void FJSort(std::vector<int> &arr);
+    static void FJSortInPlace(std::vector<int> &arr);
     static void FJSort(std::list<int> &lst);
 };
 
 
 #endif //EX02_PMERGEME_H
+

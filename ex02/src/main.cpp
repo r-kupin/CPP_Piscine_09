@@ -37,7 +37,8 @@ void sort_n_compare(std::vector<int> &vec, std::list<int> &list) {
     std::cout << std::endl;
 
     double arr_time = profile(&PmergeMe::FJSort, vec);
-    double list_time = profile(&PmergeMe::FJSort, list);
+	double in_place_time = profile(&PmergeMe::FJSortInPlace, vec);
+	double list_time = profile(&PmergeMe::FJSort, list);
 
     std::cout << "After:\t";
     for (std::vector<int>::iterator it = vec.begin(); it != vec.end(); ++it)
@@ -46,6 +47,8 @@ void sort_n_compare(std::vector<int> &vec, std::list<int> &list) {
 
     std::cout << "Time to process a range of " << vec.size() << " elements " <<
         "std::vector<int>\t: " << std::fixed << arr_time << " us" << std::endl;
+    std::cout << "Time to process a range of " << vec.size() << " elements in place " <<
+        "std::vector<int>\t: " << std::fixed << in_place_time << " us" << std::endl;
     std::cout << "Time to process a range of " << list.size() << " elements " <<
         "std::list<int>\t: " << std::fixed << list_time << " us" << std::endl;
 }

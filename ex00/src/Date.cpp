@@ -48,7 +48,7 @@ bool Date::IsCorrectDataString(const std::string &str) {
 	int day = std::atoi(str.substr(str.find_last_of('-') + 1).c_str());
 	int daysInMonth[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
-	if (year < 2009 || year > 2023 || month < 1 || month > 12 || day < 1 || day > 31)
+	if (year < 2009 || month < 1 || month > 12 || day < 1 || day > 31)
 		return false;
 
    /**

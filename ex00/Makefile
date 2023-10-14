@@ -31,8 +31,8 @@ asan: $(ASAN)
 	./$(ASAN) "resources/empty_input.txt"
 
 valgrnd: $(NAME)
-	valgrind ./$(NAME) "resources/test_input.txt"
-	valgrind ./$(NAME) "resources/empty_input.txt"
+	valgrind --track-fds=yes ./$(NAME) "resources/test_input.txt"
+	valgrind --track-fds=yes ./$(NAME) "resources/empty_input.txt"
 
 $(ASAN): $(OBJS)
 	$(CXX) $(ASANFLAGS) $(CXXFLAGS) $(OBJS) -o $(ASAN)

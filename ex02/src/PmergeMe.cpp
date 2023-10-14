@@ -104,6 +104,14 @@ void PmergeMe::FJSort(std::vector<int> &arr) {
     }
 }
 
+void PmergeMe::FJSortInPlace(std::vector<int> &arr) {
+	int straggler = -1;
+	if (arr.size() % 2 == 1)
+		straggler = *(arr.end() - 1);
+
+
+}
+
 void PmergeMe::FJSort(std::list<int> &lst) {
     (void)lst;
 }
