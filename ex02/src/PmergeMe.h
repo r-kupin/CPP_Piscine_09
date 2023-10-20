@@ -274,6 +274,22 @@ template<
 auto merge_insertion_sort_impl(RandomAccessIterator first, RandomAccessIterator last,
 							   Compare compare)
 {
+//****************************** print
+	static int call;
+	int current_call;
+	int elem = 0;
+	++call;
+	current_call = call;
+	std::cout << "(" << current_call << ")" << std::endl;
+	for (auto begin = first; begin != last; ++begin) {
+		elem++;
+		if (elem % 2 == 0)
+			std::cout << "\033[31m" << std::setw(2) << *begin.base() << "\033[0m" << " ";
+		else
+			std::cout << std::setw(2) << *begin.base() << " ";
+	}
+	std::cout << " #" << elem << std::endl;
+//******************************
 	// Cache all the differences between a Jacobsthal number and its
 	// predecessor that fit in 64 bits, starting with the difference
 	// between the Jacobsthal numbers 4 and 3 (the previous ones are
@@ -313,6 +329,19 @@ auto merge_insertion_sort_impl(RandomAccessIterator first, RandomAccessIterator 
 		}
 	}
 
+	//****************************** print
+	elem = 0;
+	std::cout << "(" << current_call << ")" << " pairs arranged " << std::endl;
+
+	for (auto begin = first; begin != last; ++begin) {
+		elem++;
+		if (elem % 2 == 0)
+			std::cout << "\033[31m" << std::setw(2) << *begin.base() << "\033[0m" << " ";
+		else
+			std::cout << std::setw(2) << *begin.base() << " ";
+	}
+	std::cout << " #" << elem << std::endl;
+	//******************************
 	////////////////////////////////////////////////////////////
 	// Recursively sort the pairs by max
 
@@ -322,6 +351,23 @@ auto merge_insertion_sort_impl(RandomAccessIterator first, RandomAccessIterator 
 			compare
 	);
 
+	//****************************** print
+	elem = 0;
+	std::cout << "(" << current_call << ")" << " pairs sorted" << std::endl;
+
+	for (auto begin = first; begin != last; ++begin) {
+		elem++;
+		if (elem % 2 == 0)
+			std::cout << "\033[31m" << std::setw(2) << *begin.base() << "\033[0m" << " ";
+		else
+			std::cout << std::setw(2) << *begin.base() << " ";
+	}
+	std::cout << " #" << elem << std::endl;
+	//******************************
+
+	if (elem == 100) {
+		std::cout << "(" << current_call << ")"  <<  "\033[31m" << "s " << "\033[0m" << "pend" << std::endl;
+	}
 	////////////////////////////////////////////////////////////
 	// Separate main chain and pend elements
 
@@ -348,11 +394,26 @@ auto merge_insertion_sort_impl(RandomAccessIterator first, RandomAccessIterator 
 		pend.push_back(std::end(chain));
 	}
 
+	//****************************** print
+	elem = 0;
+	std::cout << "(" << current_call << ")"  << " chain created "  << std::endl;
+
+	for (auto begin = chain.begin(); begin != chain.end(); ++begin) {
+		elem++;
+		std::cout << std::setw(2) << *(*begin) << " ";
+	}
+	std::cout << " #" << elem << std::endl;
+	//******************************
+
 	////////////////////////////////////////////////////////////
 	// Binary insertion into the main chain
 
 	auto current_it = first + 2;
 	auto current_pend = std::begin(pend);
+
+	//****************************** print
+	std::cout << "(" << current_call << ")" << " current_it: " << "\033[32m" << std::setw(2) << *current_it.base() << "\033[0m" << std::endl;
+	//******************************
 
 	for (int k = 0 ; ; ++k)
 	{
@@ -365,7 +426,16 @@ auto merge_insertion_sort_impl(RandomAccessIterator first, RandomAccessIterator 
 
 		// Find next index
 		auto dist = jacobsthal_diff[k];
-		if (dist > static_cast<size_type>(std::distance(current_pend, std::end(pend)))) break;
+		long pend_to_end = std::distance(current_pend, std::end(pend));
+		//****************************** print
+		std::cout << "(" << current_call << ")" << " js dist: " << "\033[32m" << std::setw(2) << dist << "\033[0m" << " pend_to_end " << "\033[32m" << std::setw(2) <<  pend_to_end << "\033[0m" << std::endl;
+		//******************************
+		if (dist > static_cast<size_type>(pend_to_end)) {
+			//****************************** print
+			std::cout << "\033[31m" << "break"  << "\033[0m" << std::endl;
+			//******************************
+			break;
+		}
 
 		auto it = std::next(current_it, dist * 2);
 		auto pe = std::next(current_pend, dist);
@@ -382,6 +452,18 @@ auto merge_insertion_sort_impl(RandomAccessIterator first, RandomAccessIterator 
 					}
 			);
 			chain.insert(insertion_point, it);
+			//****************************** print
+			std::cout << "(" << current_call << ")" << "\033[33m" << std::setw(2) << *it.base() << "(" << std::distance(std::begin(chain), *pe) << ")" << "\033[0m" << " inserted to " << "\033[33m" << std::setw(2) << std::distance(chain.begin(), insertion_point) -1 << "\033[0m" << std::endl;
+
+			elem = 0;
+			std::cout << "\033[34m";
+			for (auto begin = chain.begin(); begin != chain.end(); ++begin) {
+				elem++;
+				std::cout << std::setw(2) << *(*begin) << " ";
+			}
+			std::cout << " #" << elem << "\033[0m" << std::endl;
+
+			//******************************
 		} while (pe != current_pend);
 
 		std::advance(current_it, dist * 2);
@@ -403,6 +485,17 @@ auto merge_insertion_sort_impl(RandomAccessIterator first, RandomAccessIterator 
 		current_it += 2;
 		++current_pend;
 	}
+
+	//****************************** print
+	elem = 0;
+	std::cout << "(" << current_call << ")"  << " chain after insetrion "  << std::endl;
+
+	for (auto begin = chain.begin(); begin != chain.end(); ++begin) {
+		elem++;
+		std::cout << std::setw(2) << *(*begin) << " ";
+	}
+	std::cout << " #" << elem << std::endl;
+	//******************************
 
 	////////////////////////////////////////////////////////////
 	// Move values in order to a cache then back to origin

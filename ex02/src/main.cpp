@@ -15,20 +15,17 @@
 #include <iomanip>
 #include "PmergeMe.h"
 
-// Cant use template with typedef, and alias declarators are c++11 :(
-//template <typename Container>
-//using PTF = void (*)(Container&);
-//
-//template <typename Container>
-//double profile(PTF<Container> func, Container& container) { ... }
-
 template <typename Container>
-double profile(void (*sort)(Container&), Container& container) {
-    clock_t start_time = clock();
-    sort(container);
-    clock_t end_time = clock();
-    return (double)(end_time - start_time) / CLOCKS_PER_SEC;
-}
+struct Profiler {
+	typedef void (*PTF)(Container&);
+
+	static double Profile(PTF sort, Container& container) {
+		clock_t start_time = clock();
+		sort(container);
+		clock_t end_time = clock();
+		return (double)(end_time - start_time) / CLOCKS_PER_SEC;
+	}
+};
 
 void sort_n_compare(std::vector<int> &vec, std::list<int> &list) {
     std::cout << "Before:\t";
@@ -37,8 +34,8 @@ void sort_n_compare(std::vector<int> &vec, std::list<int> &list) {
 	}
     std::cout << " size " << vec.size() << std::endl;
 
-    merge_insertion_sort(vec.begin(), vec.end());
-//	double arr_time = profile(&PmergeMe::FJSort, vec);
+//    merge_insertion_sort(vec.begin(), vec.end());
+	double arr_time = Profiler<std::vector<int> >::Profile(&PmergeMe::FJSortInPlace, vec);
 //	double in_place_time = profile(&PmergeMe::FJSortInPlace, vec);
 //	double list_time = profile(&PmergeMe::FJSort, list);
 
