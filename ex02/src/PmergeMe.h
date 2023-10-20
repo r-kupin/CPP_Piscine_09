@@ -22,12 +22,9 @@
 #include <type_traits>
 #include <vector>
 
+//template <typename Iterator>
+void FJSortInPlace(std::vector<int> &arr /*, Iterator begin, Iterator end */);
 
-struct PmergeMe {
-    static void FJSort(std::vector<int> &arr);
-    static void FJSortInPlace(std::vector<int> &arr);
-    static void FJSort(std::list<int> &lst);
-};
 
 ////////////////////////////////////////////////////////////
 // Iterator used to sort views of the collection

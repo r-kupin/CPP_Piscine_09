@@ -35,7 +35,7 @@ void sort_n_compare(std::vector<int> &vec, std::list<int> &list) {
     std::cout << " size " << vec.size() << std::endl;
 
 //    merge_insertion_sort(vec.begin(), vec.end());
-	double arr_time = Profiler<std::vector<int> >::Profile(&PmergeMe::FJSortInPlace, vec);
+	double arr_time = Profiler<std::vector<int> >::Profile(&FJSortInPlace, vec);
 //	double in_place_time = profile(&PmergeMe::FJSortInPlace, vec);
 //	double list_time = profile(&PmergeMe::FJSort, list);
 
