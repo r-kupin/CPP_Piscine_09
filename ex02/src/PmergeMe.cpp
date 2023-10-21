@@ -10,31 +10,41 @@
 /*                                                                            */
 /******************************************************************************/
 
-#include <string>
 #include <algorithm>
 #include <iostream>
-#include <iomanip>
+#include <iterator>
 #include "PmergeMe.h"
 
 int comparations = 0;
 
 /**
- * The Jacobsthal sequence and the number of comparisons needed for binary search are related in the sense that the Jacobsthal sequence can help you determine the number of comparisons needed for binary search in a worst-case scenario.
- * The Jacobsthal sequence is defined as follows:
- * 	J(0) = 0
- * 	J(1) = 1
- * 	J(n) = J(n-1) + 2*J(n-2) for n > 1
- * 	It's similar to the Fibonacci sequence but uses different recurrence relations. The Jacobsthal sequence is related to binary search because it represents the number of comparisons required to find an element not present in a sorted array using binary search.
- * 	In a sorted array with 2^n elements, binary search typically requires n comparisons to find an element not present.
- * 	If you represent this as a sequence, it corresponds to the Jacobsthal sequence with J(0) = 0 and J(1) = 1. So, J(n) represents the number of comparisons needed for binary search in an array of size 2^n when searching for an element not present.
- * 	For example:
- * 	J(2) = J(1) + 2J(0) = 1 + 2*0 = 1 (for an array of size 4)
- * 	J(3) = J(2) + 2J(1) = 1 + 2*1 = 3 (for an array of size 8)
- * 	In summary, the Jacobsthal sequence can be used to determine the number of comparisons needed for binary search in a sorted array when searching for an element not present, specifically in cases where the array size is a power of 2.
+ *	Generates array of Jacobstahl numbers by the formula:
+ *	J(0) = 1
+ *	J(1) = 3
+ *	J(n) = J(n-1) + 2*J(n-2) for n > 1
+ * @param n - biggest Jacobstahl number that we will need
  */
+std::vector<int> jacobstahl_get(int n) {
+	std::vector<int> sequence = {1, 3};
+	for (int i = 1; ; ++i) {
+		sequence.push_back(sequence[i] + sequence[i - 1] * 2);
+		if (sequence[i] > n)
+			break;
+	}
+	return sequence;
+}
 
+/**
+ * Simple iterative function performing binary search in the sorted range
+ * between 2 iterators, and counting comparisons
+ * @tparam T target - value we are looking for
+ * @param begin - beginning of search zone, included
+ * @param end - end of search zone, included
+ * @return iterator of the found element, or to the closest bigger one if
+ * element isn't present
+ */
 template <typename Iterator, typename T>
-Iterator my_bin_search(Iterator begin, Iterator end, const T& target) {
+Iterator bin_search(Iterator begin, Iterator end, const T& target) {
 	Iterator result = end;
 
 	while (begin < end) {
@@ -55,24 +65,52 @@ Iterator my_bin_search(Iterator begin, Iterator end, const T& target) {
 	return result;
 }
 
-void insert_remaining(std::vector<int> &s,
-					  std::vector<std::pair<int, int> >::iterator from,
-					  std::vector<std::pair<int, int> >::iterator to) {
-	for(; from >= to; --from) {
-		std::vector<int>::iterator insertion_point = my_bin_search(s.begin(), s.end() - 1, (*from).first);
-		s.insert(insertion_point, (*from).first);
+/**
+ * Function used to insert the remaining elements when all Jacobstahl numbers
+ * are already used
+ * @param sink - the collection where to insert
+ * @param source_from - iterator to first element to insert
+ * @param source_up_to - iterator to last element to insert
+ */
+template <typename Iterator, typename Container>
+void insert_remaining(Container &sink, Iterator source_from,
+					  Iterator source_up_to) {
+	for(; source_from >= source_up_to; --source_from) {
+		sink.insert(
+				bin_search(sink.begin(),
+						   sink.end() - 1,
+						   (*source_from).first),
+											(*source_from).first);
 	}
 }
 
-bool	all_non_js_indeces_used_between_last_and_prev_js(int current_js_index_used,
-													  int iterations_after_last_js,
-													  const std::vector<int> &jacobsthal) {
+/**
+ * Checks whether we need to jump to the next jacobstahl number or not
+ * If we already performed all iterations, that form up a distance between
+ * the last jacobstahl number used, and one we used before - we need to grab
+ * the nex one from jacobsthal sequence
+ */
+bool	all_non_js_indeces_between_last_and_prev_js_used(
+		int current_js_index_used, int iterations_after_last_js,
+		const std::vector<int> &jacobsthal) {
 	return iterations_after_last_js ==
-		   (jacobsthal[current_js_index_used] - jacobsthal[current_js_index_used - 1] - 1);
+			(jacobsthal[current_js_index_used] -
+			jacobsthal[current_js_index_used - 1] - 1);
 }
 
-bool first_iteration(int current_js_index_used) {return current_js_index_used == 0;}
+/**
+ * The first iteration is a bit special, because we need to use 2 jacobsthal
+ * numbers in row - 1 and 3.
+ */
+bool first_iteration(int current_js_index_used) {
+	return current_js_index_used == 0;
+}
 
+/**
+ * Function creates vector of pairs, consisting of even and odd elements from
+ * input countainer arranging elements in this pairs in a way that first
+ * element is always smaller or equal to second
+ */
 void	form_pairs(std::vector<int> &arr,
 		std::vector<std::pair<int, int> > &pairs) {
 	for (std::size_t i = 0; i < pairs.size(); ++i) {
@@ -87,6 +125,33 @@ void	form_pairs(std::vector<int> &arr,
 	}
 }
 
+/**
+ * Function creates list of pairs, consisting of even and odd elements from
+ * input countainer arranging elements in this pairs in a way that first
+ * element is always smaller or equal to second
+ */
+void	form_pairs(std::list<int> &lst,
+		std::list<std::pair<int, int> > &pairs) {
+	l_iter p_it = lst.begin();
+	l_iter s_it = ++p_it;
+	for (p_it = lst.begin(); s_it != lst.end();
+			std::advance(p_it, 2), std::advance(s_it, 2)) {
+		std::pair<int, int> p;
+		if (*p_it > *s_it) {
+			p.first = *p_it;
+			p.second = *s_it;
+		} else {
+			p.first = *s_it;
+			p.second = *p_it;
+		}
+		pairs.insert(std::lower_bound(pairs.begin(), pairs.end(), p, ), p);
+	}
+}
+
+/**
+ * Naive in-place sorting function for array
+ * @param pairs
+ */
 void	sort_pairs(std::vector<std::pair<int, int> > &pairs) {
 	for (std::size_t i = 1; i < pairs.size(); ++i) {
 		std::pair<int, int> x = pairs[i];
@@ -99,17 +164,11 @@ void	sort_pairs(std::vector<std::pair<int, int> > &pairs) {
 	}
 }
 
-std::vector<int> jacobstahl_get(int n) {
-	std::vector<int> sequence = {1, 3};
-	for (int i = 1; ; ++i) {
-		sequence.push_back(sequence[i] + sequence[i - 1] * 2);
-		if (sequence[i] > n)
-			break;
-	}
-	return sequence;
+void	sort_pairs(std::list<std::pair<int, int> > &pairs) {
+
 }
 
-void FJSortInPlace(std::vector<int> &arr) {
+void FJSort(std::vector<int> &arr) {
 	/**
 	 * Step 1:
 	 * handle the straggler element - memoize the last element if number of
@@ -161,12 +220,13 @@ void FJSortInPlace(std::vector<int> &arr) {
 	 * as follows: <B1>,<B3>,B2,<B5>,B4,<B11>,B10,B9,B8,B7,B6,<B21>,B20 ...
  	 */
 	int current_js_index_used = 0, iterations_after_last_js = 0;
-//	std::cout << 1 << " ";
+
 	for (size_t pend_i = 0; ;) {
 		std::pair<int, int> item;
 		if (first_iteration(current_js_index_used) ||
-			all_non_js_indeces_used_between_last_and_prev_js(
-					current_js_index_used,iterations_after_last_js, jacobstahl_sequence)) {
+				all_non_js_indeces_between_last_and_prev_js_used(
+						current_js_index_used, iterations_after_last_js,
+						jacobstahl_sequence)) {
 			int index_in_pend_to_take = jacobstahl_sequence[++current_js_index_used] -1;
 			if (index_in_pend_to_take >= pairs.size()) {
 				insert_remaining(s, pairs.end() - 1,
@@ -174,20 +234,19 @@ void FJSortInPlace(std::vector<int> &arr) {
 				break;
 			}
 			item = pairs[index_in_pend_to_take];
-//			std::cout << index_in_pend_to_take + 1 << " ";
 			pend_i = jacobstahl_sequence[current_js_index_used] - 2;
 			iterations_after_last_js = 0;
 		} else {
 			item = pairs[pend_i];
-//			std::cout << pend_i + 1 << " ";
 			++iterations_after_last_js;
 			--pend_i;
 		}
-		std::vector<int>::iterator insertion_point = my_bin_search(s.begin(), s.begin() + (2 << current_js_index_used) - 2, item.first);
+		v_iter insertion_point = bin_search(s.begin(),
+				s.begin() + (2 << current_js_index_used) - 1, item.first);
 		s.insert(insertion_point, item.first);
 	}
 	if (straggler != -1) {
-		std::vector<int>::iterator insertion_point = my_bin_search(s.begin(), s.end(), straggler);
+		v_iter insertion_point = bin_search(s.begin(), s.end(), straggler);
 		s.insert(insertion_point, straggler);
 	}
 	arr = s;
