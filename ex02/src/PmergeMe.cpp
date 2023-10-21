@@ -16,6 +16,8 @@
 #include <iomanip>
 #include "PmergeMe.h"
 
+int comparations = 0;
+
 /**
  * The Jacobsthal sequence and the number of comparisons needed for binary search are related in the sense that the Jacobsthal sequence can help you determine the number of comparisons needed for binary search in a worst-case scenario.
  * The Jacobsthal sequence is defined as follows:
@@ -31,29 +33,34 @@
  * 	In summary, the Jacobsthal sequence can be used to determine the number of comparisons needed for binary search in a sorted array when searching for an element not present, specifically in cases where the array size is a power of 2.
  */
 
+template <typename Iterator, typename T>
+Iterator my_bin_search(Iterator begin, Iterator end, const T& target) {
+	Iterator result = end;
 
-std::vector<int>::iterator my_bin_search(std::vector<int>::iterator begin, std::vector<int>::iterator end, int target) {
-	std::vector<int>::iterator median;
-
-	for (median = begin + (end - begin) / 2;
-			*median != target && begin != end;
-			median = begin + (end - begin) / 2) {
-		if (*median < target) {
-			begin = median;
-		} else if (*median > target) {
-			end = median;
+	while (begin < end) {
+		Iterator mid = begin + (std::distance(begin, end) / 2);
+		if (*mid < target) {
+			comparations += 1;
+			begin = mid + 1;
+		} else if (*mid > target) {
+			comparations += 2;
+			result = mid;
+			end = mid;
+		} else {
+			comparations += 2;
+			return mid;
 		}
 	}
-	return median;
-}
 
+	return result;
+}
 
 void insert_remaining(std::vector<int> &s,
 					  std::vector<std::pair<int, int> >::iterator from,
 					  std::vector<std::pair<int, int> >::iterator to) {
 	for(; from >= to; --from) {
-		int insertion_point = std::lower_bound(s.begin(), s.end(), (*from).first) - s.begin();
-		s.insert(s.begin() + insertion_point, (*from).first);
+		std::vector<int>::iterator insertion_point = my_bin_search(s.begin(), s.end() - 1, (*from).first);
+		s.insert(insertion_point, (*from).first);
 	}
 }
 
@@ -76,6 +83,7 @@ void	form_pairs(std::vector<int> &arr,
 			pairs[i].first = arr[i * 2];
 			pairs[i].second = arr[i * 2 + 1];
 		}
+		comparations++;
 	}
 }
 
@@ -85,11 +93,9 @@ void	sort_pairs(std::vector<std::pair<int, int> > &pairs) {
 		int j = (int)i - 1;
 		for (; j >= 0 && pairs[j].second > x.second ; j--) {
 			pairs[j + 1] = pairs[j];
+			comparations++;
 		}
 		pairs[j + 1] = x;
-	}
-	for (std::vector<std::pair<int, int> >::iterator it = pairs.begin();
-		it != pairs.end(); ++it) {
 	}
 }
 
@@ -140,21 +146,6 @@ void FJSortInPlace(std::vector<int> &arr) {
 	for (std::size_t i = 1; i <= pairs.size(); ++i)
 		s[i] = pairs[i - 1].second;
 
-	for (auto it = s.begin(); it != s.end(); ++it) {
-		std::cout << std::setw(2) << *it << " ";
-	}
-	std::cout << std::endl;
-
-	for (auto it = pairs.begin(); it != pairs.end(); ++it) {
-		std::cout << std::setw(2) << (*it).second << " ";
-	}
-	std::cout << std::endl;
-
-	for (auto it = pairs.begin(); it != pairs.end(); ++it) {
-		std::cout << std::setw(2) << (*it).first << " ";
-	}
-	std::cout << std::endl;
-
 	/**
 	 * Step 5:
 	 * insert the other pend elements into the main chain in a way that ensures that
@@ -170,9 +161,7 @@ void FJSortInPlace(std::vector<int> &arr) {
 	 * as follows: <B1>,<B3>,B2,<B5>,B4,<B11>,B10,B9,B8,B7,B6,<B21>,B20 ...
  	 */
 	int current_js_index_used = 0, iterations_after_last_js = 0;
-
-	std::cout << 1 << " ";
-
+//	std::cout << 1 << " ";
 	for (size_t pend_i = 0; ;) {
 		std::pair<int, int> item;
 		if (first_iteration(current_js_index_used) ||
@@ -180,21 +169,27 @@ void FJSortInPlace(std::vector<int> &arr) {
 					current_js_index_used,iterations_after_last_js, jacobstahl_sequence)) {
 			int index_in_pend_to_take = jacobstahl_sequence[++current_js_index_used] -1;
 			if (index_in_pend_to_take >= pairs.size()) {
-				insert_remaining(s, pairs.end() - 1, pairs.begin() + jacobstahl_sequence[current_js_index_used - 1]);
+				insert_remaining(s, pairs.end() - 1,
+						pairs.begin() + jacobstahl_sequence[current_js_index_used - 1]);
 				break;
 			}
 			item = pairs[index_in_pend_to_take];
-			std::cout << index_in_pend_to_take + 1 << " ";
+//			std::cout << index_in_pend_to_take + 1 << " ";
 			pend_i = jacobstahl_sequence[current_js_index_used] - 2;
 			iterations_after_last_js = 0;
 		} else {
 			item = pairs[pend_i];
-			std::cout << pend_i + 1 << " ";
+//			std::cout << pend_i + 1 << " ";
 			++iterations_after_last_js;
 			--pend_i;
 		}
-		std::vector<int>::iterator insertion_point = my_bin_search(s.begin(), s.end(), item.first);
+		std::vector<int>::iterator insertion_point = my_bin_search(s.begin(), s.begin() + (2 << current_js_index_used) - 2, item.first);
 		s.insert(insertion_point, item.first);
 	}
-	std::cout << std::endl;
+	if (straggler != -1) {
+		std::vector<int>::iterator insertion_point = my_bin_search(s.begin(), s.end(), straggler);
+		s.insert(insertion_point, straggler);
+	}
+	arr = s;
+	std::cout << "(" << comparations << ")" << " comparisons performed" << std::endl;
 }
