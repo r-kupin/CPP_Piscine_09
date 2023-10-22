@@ -28,6 +28,7 @@ struct Profiler {
 };
 
 void sort_n_compare(std::vector<int> &vec, std::list<int> &list) {
+        (void )list;
     std::cout << "Before:\t";
     for (std::vector<int>::iterator it = vec.begin(); it != vec.end(); ++it) {
 		std::cout << std::setw(2) << *it << " ";
@@ -35,7 +36,7 @@ void sort_n_compare(std::vector<int> &vec, std::list<int> &list) {
     std::cout << " size " << vec.size() << std::endl;
 
 //    merge_insertion_sort(vec.begin(), vec.end());
-	double arr_time = Profiler<std::vector<int> >::Profile(&FJSort, vec);
+    (void )Profiler<std::vector<int> >::Profile(&FJSort, vec);
 //	double in_place_time = profile(&PmergeMe::FJSort, vec);
 //	double list_time = profile(&PmergeMe::FJSort, list);
 

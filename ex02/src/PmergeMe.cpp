@@ -25,7 +25,9 @@ int comparations = 0;
  * @param n - biggest Jacobstahl number that we will need
  */
 std::vector<int> jacobstahl_get(int n) {
-	std::vector<int> sequence = {1, 3};
+	std::vector<int> sequence(2);
+    sequence[0] = 1;
+    sequence[1] = 3;
 	for (int i = 1; ; ++i) {
 		sequence.push_back(sequence[i] + sequence[i - 1] * 2);
 		if (sequence[i] > n)
@@ -45,26 +47,26 @@ std::vector<int> jacobstahl_get(int n) {
  */
 template <typename Iterator, typename T>
 Iterator bin_search(Iterator begin, Iterator end, const T& target) {
-	Iterator result = end;
+    Iterator result = end;
 
-	while (begin < end) {
-		Iterator mid = begin + (std::distance(begin, end) / 2);
-		if (*mid < target) {
-			comparations += 1;
-			begin = mid + 1;
-		} else if (*mid > target) {
-			comparations += 2;
-			result = mid;
-			end = mid;
-		} else {
-			comparations += 2;
-			return mid;
-		}
-	}
+    while (begin != end) {
+        Iterator mid = begin;
+        std::advance(mid, std::distance(begin, end) / 2);
 
-	return result;
+        if (*mid < target) {
+            comparations++;
+            std::advance(begin, 1);
+        } else if (*mid > target) {
+            comparations += 2;
+            result = mid;
+            end = mid;
+        } else {
+            comparations += 2;
+            return mid;
+        }
+    }
+    return result;
 }
-
 /**
  * Function used to insert the remaining elements when all Jacobstahl numbers
  * are already used
@@ -107,65 +109,20 @@ bool first_iteration(int current_js_index_used) {
 }
 
 /**
- * Function creates vector of pairs, consisting of even and odd elements from
- * input countainer arranging elements in this pairs in a way that first
- * element is always smaller or equal to second
- */
-void	form_pairs(std::vector<int> &arr,
-		std::vector<std::pair<int, int> > &pairs) {
-	for (std::size_t i = 0; i < pairs.size(); ++i) {
-		if (arr[i * 2] > arr[i * 2 + 1]) {
-			pairs[i].first = arr[i * 2 + 1];
-			pairs[i].second = arr[i * 2];
-		} else {
-			pairs[i].first = arr[i * 2];
-			pairs[i].second = arr[i * 2 + 1];
-		}
-		comparations++;
-	}
-}
-
-/**
  * Function creates list of pairs, consisting of even and odd elements from
  * input countainer arranging elements in this pairs in a way that first
  * element is always smaller or equal to second
  */
-void	form_pairs(std::list<int> &lst,
-		std::list<std::pair<int, int> > &pairs) {
-	l_iter p_it = lst.begin();
-	l_iter s_it = ++p_it;
-	for (p_it = lst.begin(); s_it != lst.end();
-			std::advance(p_it, 2), std::advance(s_it, 2)) {
-		std::pair<int, int> p;
-		if (*p_it > *s_it) {
-			p.first = *p_it;
-			p.second = *s_it;
-		} else {
-			p.first = *s_it;
-			p.second = *p_it;
-		}
-		pairs.insert(std::lower_bound(pairs.begin(), pairs.end(), p, ), p);
-	}
-}
-
-/**
- * Naive in-place sorting function for array
- * @param pairs
- */
-void	sort_pairs(std::vector<std::pair<int, int> > &pairs) {
-	for (std::size_t i = 1; i < pairs.size(); ++i) {
-		std::pair<int, int> x = pairs[i];
-		int j = (int)i - 1;
-		for (; j >= 0 && pairs[j].second > x.second ; j--) {
-			pairs[j + 1] = pairs[j];
-			comparations++;
-		}
-		pairs[j + 1] = x;
-	}
-}
-
-void	sort_pairs(std::list<std::pair<int, int> > &pairs) {
-
+template<typename Iterator, typename PairContainer>
+void form_pairs(Iterator begin, Iterator end, PairContainer &pairs) {
+	Iterator p_it = begin;
+    Iterator s_it = ++p_it;
+	for (p_it = begin; s_it != end && p_it != end; std::advance(p_it, 2),
+                                                    std::advance(s_it, 2)) {
+		ComPairAble<int, int> p(*p_it, *s_it);
+		pairs.insert(bin_search(pairs.begin(), pairs.end(), p), p);
+        comparations++;
+    }
 }
 
 void FJSort(std::vector<int> &arr) {
@@ -183,11 +140,11 @@ void FJSort(std::vector<int> &arr) {
 	 * Split the collection in n/2 pairs of 2 elements and order these
 	 * elements pairwise. Then sort the pairs of elements by their highest value
 	 */
-	std::vector<std::pair<int, int> > pairs(arr.size() / 2);
-	form_pairs(arr, pairs);
-	sort_pairs(pairs);
+	std::vector<ComPairAble<int, int> > pairs;
+    form_pairs(arr.begin(), arr.end(), pairs);
 
-	const std::vector<int> jacobstahl_sequence = jacobstahl_get(pairs.size());
+	const std::vector<int> jacobstahl_sequence =
+            jacobstahl_get(static_cast<int>(pairs.size()));
 	/**
 	 * Step 3:
 	 * Consider that the highest values form a sorted list that we will
@@ -206,15 +163,17 @@ void FJSort(std::vector<int> &arr) {
 		s[i] = pairs[i - 1].second;
 
 	/**
-	 * Step 5:
+	 * Step 4:
 	 * insert the other pend elements into the main chain in a way that ensures that
-	 * the size of the insertion area is a power of 2 minus 1 as often as possible.
-	 * Basically, we will insert B3 in {B1,A1,A2} (we know that it is less than A3),
+	 * the size of the insertion area is a jacobstahl number power of 2 minus 1.
+	 * Basically, we will insert B3 in {B1,A1,A2} (we know that it is less
+	 * than A3),
 	 * then we will insert B2 into {B1,A1,B3} no matter where B3 was inserted.
-	 * Note that during these insertions, the size of the insertion area is always at most 3.
-	 * The value of the next pend element bk to insert into the main chain
+	 * During these insertions, the size of the insertion area is always at
+	 * most 3.
+	 * The value of the next pend element Bk to insert into the main chain
 	 * while minimizing the number of comparisons actually corresponds to
-	 * the next Jacobsthal number.
+	 * the next Jacobsthal number, and insertion area will be it's power of 2.
 	 * We inserted the element 3 first, so the next will be 5 then 11 then 21, etc...
 	 * To sum up, the insertion order of the first pend elements into the main chain is
 	 * as follows: <B1>,<B3>,B2,<B5>,B4,<B11>,B10,B9,B8,B7,B6,<B21>,B20 ...
@@ -228,7 +187,7 @@ void FJSort(std::vector<int> &arr) {
 						current_js_index_used, iterations_after_last_js,
 						jacobstahl_sequence)) {
 			int index_in_pend_to_take = jacobstahl_sequence[++current_js_index_used] -1;
-			if (index_in_pend_to_take >= pairs.size()) {
+			if (index_in_pend_to_take >= static_cast<int>(pairs.size())) {
 				insert_remaining(s, pairs.end() - 1,
 						pairs.begin() + jacobstahl_sequence[current_js_index_used - 1]);
 				break;

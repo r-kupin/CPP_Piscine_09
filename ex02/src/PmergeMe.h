@@ -13,15 +13,8 @@
 #ifndef EX02_PMERGEME_H
 #define EX02_PMERGEME_H
 
-#include <algorithm>
-#include <cstddef>
-#include <cstdint>
-#include <functional>
-#include <list>
-#include <iterator>
-#include <type_traits>
 #include <vector>
-#include <iomanip>
+#include <list>
 
 typedef std::vector<int>::iterator v_iter;
 typedef std::list<int>::iterator l_iter;
@@ -29,6 +22,26 @@ typedef std::list<int>::iterator l_iter;
 
 struct PMerge {
 
+};
+
+template <typename T1, typename T2>
+struct ComPairAble : public std::pair<T1, T2> {
+    ComPairAble() : std::pair<T1, T2>() {}
+    ComPairAble(T1 first, T2 second) : std::pair<T1, T2>(
+            first < second ? first : second,
+            second < first ?  first : second) {}
+
+    bool operator<(const ComPairAble &rhs) const {
+        return this->second < rhs.second;
+    }
+
+    bool operator>(const ComPairAble &rhs) const {
+        return this->second > rhs.second;
+    }
+
+    bool operator==(const ComPairAble &rhs) const {
+        return this->second == rhs.second;
+    }
 };
 
 void FJSort(std::vector<int> &arr);
