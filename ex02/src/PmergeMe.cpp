@@ -87,23 +87,13 @@ Iterator bin_search(Iterator begin, Iterator end, const T& target) {
  * @param source_up_to - iterator to last element to insert
  */
 template <typename Iterator, typename Container>
-void insert_remaining(Container &sink, Iterator source_from,
-					  Iterator source_up_to) {
-	int numElementsToInsert = std::abs(
-			std::distance(source_from, source_up_to));
+void insert_remaining(Container &sink, Iterator source_from, int numElementsToInsert) {
 
-	for (int i = 0; i <= numElementsToInsert && source_from != source_up_to;
-		++i, --source_from) {
+	for (; numElementsToInsert > 0; --numElementsToInsert, --source_from) {
 		std::cout << "(" << source_from->first << ")" << std::endl;
 		sink.insert(
 				bin_search(sink.begin(), next(sink.end(), -1),
 						source_from->first),
-				source_from->first);
-	}
-	if (source_from == source_up_to) {
-		sink.insert(
-				bin_search(sink.begin(), next(sink.end(), -1),
-						   source_from->first),
 				source_from->first);
 	}
 }
@@ -223,7 +213,8 @@ int FJSort(std::vector<int> &arr) {
 			if (index_in_pend_to_take >= static_cast<int>(pairs.size())) {
 				insert_remaining(s,
 						pairs.end() - 1,
-						pairs.begin() + jacobstahl_sequence[current_js_index_used - 1]);
+								 pairs.size() -
+								 jacobstahl_sequence[current_js_index_used - 1]);
 				break;
 			}
 			item = pairs[index_in_pend_to_take];
@@ -291,9 +282,8 @@ int FJSort(std::list<int> &lst) {
 			if (index_in_pend_to_take >= static_cast<int>(pairs.size())) {
 				insert_remaining(s,
 						next(pairs.end(), -1),
-						next(pairs.begin(),
-								jacobstahl_sequence[current_js_index_used -
-								1]));
+								 pairs.size() -
+								 jacobstahl_sequence[current_js_index_used - 1]);
 				break;
 			}
 			item = next(pairs.begin(), index_in_pend_to_take);
