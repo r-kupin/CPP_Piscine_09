@@ -62,36 +62,53 @@ Iterator bin_search(Iterator begin, Iterator end, const T& target) {
         Iterator mid = begin;
         std::advance(mid, std::distance(begin, end) / 2);
 
-        if (*mid < target) {
-            comparations++;
+		comparations++;
+		if (*mid < target) {
             std::advance(begin, 1);
         } else if (*mid > target) {
-            comparations += 2;
             result = mid;
             end = mid;
         } else {
-            comparations += 2;
             return mid;
         }
     }
     return result;
 }
 
+
+template <typename Container, typename Iterator, typename T>
+void order_insert(Container &where, Iterator end_of_insertion_area, T item) {
+	where.insert(
+			bin_search(
+					where.begin(),
+					end_of_insertion_area, item), item);
+}
+
+template <typename Container, typename T>
+void order_insert(Container &where, int size_of_insertion_area, T item) {
+	where.insert(
+			bin_search(
+					where.begin(),
+					next(where.begin(),size_of_insertion_area), item), item);
+}
+
+template <typename Container, typename T>
+void order_insert(Container &where, T item) {
+	order_insert(where, where.end(), item);
+}
+
 /**
  * Function used to insert the remaining elements when all Jacobstahl numbers
  * are already used
  * @param sink - the collection where to insert
- * @param source_from - iterator to first element to insert
- * @param source_up_to - iterator to last element to insert
+ * @param source_from - iterator to first element to insert (last pend element)
+ * @param amount - how much elements to insert
  */
 template <typename Iterator, typename Container>
-void insert_remaining(Container &sink, Iterator source_from, int numElementsToInsert) {
+void insert_remaining(Container &sink, Iterator source_from, int amount) {
 
-	for (; numElementsToInsert > 0; --numElementsToInsert, --source_from) {
-		sink.insert(
-				bin_search(sink.begin(), next(sink.end(), -1),
-						source_from->first),
-				source_from->first);
+	for (; amount > 0; --amount, --source_from) {
+		order_insert(sink,next(sink.end(), -1), source_from->first);
 	}
 }
 
@@ -102,7 +119,8 @@ void insert_remaining(Container &sink, Iterator source_from, int numElementsToIn
  * the nex one from jacobsthal sequence
  */
 bool	all_non_js_indeces_between_last_and_prev_js_used(
-		int current_js_index_used, int iterations_after_last_js,
+		int current_js_index_used,
+		int iterations_after_last_js,
 		const std::vector<int> &jacobsthal) {
 	return iterations_after_last_js ==
 			(jacobsthal[current_js_index_used] -
@@ -131,7 +149,7 @@ void form_pairs(Iterator begin, Iterator end, PairContainer &pairs) {
 		std::advance(p_it, 2), std::advance(s_it, 2)) {
 		ComPairAble<int, int> p(*p_it, *s_it);
 		comparations++;
-		pairs.insert(bin_search(pairs.begin(), pairs.end(), p), p);
+		order_insert(pairs, p);
     }
 }
 
@@ -219,15 +237,10 @@ int FJSort(std::vector<int> &arr) {
 			++iterations_after_last_js;
 			--pend_i;
 		}
-		s.insert(bin_search(
-								s.begin(),
-								s.begin() + (2 << current_js_index_used) - 1,
-								item.first),
-										item.first);
-
+		order_insert(s, (2 << current_js_index_used) - 1, item.first);
 	}
 	if (straggler != -1)
-		s.insert(bin_search(s.begin(), s.end(), straggler), straggler);
+		order_insert(s, straggler);
 	arr = s;
 	return comparations;
 }
@@ -263,8 +276,7 @@ int FJSort(std::list<int> &lst) {
 					jacobstahl_sequence)) {
 			int index_in_pend_to_take = jacobstahl_sequence[++current_js_index_used] -1;
 			if (index_in_pend_to_take >= static_cast<int>(pairs.size())) {
-				insert_remaining(s,
-						next(pairs.end(), -1),
+				insert_remaining(s,next(pairs.end(), -1),
 								 pairs.size() -
 								 jacobstahl_sequence[current_js_index_used - 1]);
 				break;
@@ -277,14 +289,10 @@ int FJSort(std::list<int> &lst) {
 			++iterations_after_last_js;
 			--pend_i;
 		}
-		s.insert(bin_search(
-							s.begin(),
-							next(s.begin(),(2 << current_js_index_used) - 1),
-							item->first),
-									item->first);
+		order_insert(s, (2 << current_js_index_used) - 1, item->first);
 	}
 	if (straggler != -1)
-		s.insert(bin_search(s.begin(), s.end(), straggler), straggler);
+		order_insert(s, straggler);
 	lst = s;
 	return comparations;
 }
