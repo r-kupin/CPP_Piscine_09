@@ -11,9 +11,7 @@
 /******************************************************************************/
 
 #include <algorithm>
-#include <iostream>
 #include <iterator>
-#include <iomanip>
 #include "PmergeMe.h"
 
 int comparations;
@@ -90,7 +88,6 @@ template <typename Iterator, typename Container>
 void insert_remaining(Container &sink, Iterator source_from, int numElementsToInsert) {
 
 	for (; numElementsToInsert > 0; --numElementsToInsert, --source_from) {
-		std::cout << "(" << source_from->first << ")" << std::endl;
 		sink.insert(
 				bin_search(sink.begin(), next(sink.end(), -1),
 						source_from->first),
@@ -199,10 +196,7 @@ int FJSort(std::vector<int> &arr) {
 	 * as follows: <B1>,<B3>,B2,<B5>,B4,<B11>,B10,B9,B8,B7,B6,<B21>,B20 ...
  	 */
 	int current_js_index_used = 0, iterations_after_last_js = 0;
-	for (auto it = pairs.begin(); it != pairs.end(); ++it) {
-		std::cout << " " << it->first;
-	}
-	std::cout << std::endl;
+
 	for (size_t pend_i = 0;;) {
 		ComPairAble<int, int> item;
 		if (first_iteration(current_js_index_used) ||
@@ -218,26 +212,19 @@ int FJSort(std::vector<int> &arr) {
 				break;
 			}
 			item = pairs[index_in_pend_to_take];
-//			std::cout << "(" << index_in_pend_to_take + 1 << ")" << " ";
 			pend_i = jacobstahl_sequence[current_js_index_used] - 2;
 			iterations_after_last_js = 0;
 		} else {
 			item = pairs[pend_i];
-//			std::cout << "(" << pend_i + 1 << ")" << " ";
 			++iterations_after_last_js;
 			--pend_i;
 		}
-		std::cout << "[" << item.first << "]";
 		s.insert(bin_search(
 								s.begin(),
 								s.begin() + (2 << current_js_index_used) - 1,
 								item.first),
 										item.first);
-		for (std::vector<int>::iterator it = s.begin();
-			 it != s.end(); ++it) {
-			std::cout << " " << *it;
-		}
-		std::cout << std::endl;
+
 	}
 	if (straggler != -1)
 		s.insert(bin_search(s.begin(), s.end(), straggler), straggler);
@@ -269,10 +256,6 @@ int FJSort(std::list<int> &lst) {
 
 	int current_js_index_used = 0, iterations_after_last_js = 0;
 
-	for (auto it = pairs.begin(); it != pairs.end(); ++it) {
-		std::cout << " " << it->first;
-	}
-	std::cout << std::endl;
 	for (PairListIt pend_i = pairs.begin(), item;;) {
 		if (first_iteration(current_js_index_used) ||
 			all_non_js_indeces_between_last_and_prev_js_used(
@@ -294,16 +277,11 @@ int FJSort(std::list<int> &lst) {
 			++iterations_after_last_js;
 			--pend_i;
 		}
-		std::cout << "[" << item->first << "]";
 		s.insert(bin_search(
 							s.begin(),
 							next(s.begin(),(2 << current_js_index_used) - 1),
 							item->first),
 									item->first);
-		for (auto it = s.begin(); it != s.end(); ++it) {
-			std::cout << " " << *it;
-		}
-		std::cout << std::endl;
 	}
 	if (straggler != -1)
 		s.insert(bin_search(s.begin(), s.end(), straggler), straggler);
