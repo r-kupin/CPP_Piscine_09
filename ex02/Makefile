@@ -13,8 +13,6 @@
 #
 
 NAME = PmergeMe
-ASAN = $(NAME)_asan
-WORDY = $(NAME)_wordy
 
 SRCS = 	src/main.cpp src/PmergeMe.cpp
 
@@ -26,12 +24,6 @@ CXXFLAGS = -Wall -Wextra -Werror -std=c++98
 ASANFLAGS = -g -fsanitize=address
 
 all: $(NAME)
-
-asan: $(ASAN)
-	./$(ASAN)  ""
-
-valgrnd: $(NAME)
-	valgrind ./$(NAME)  "8 9 * 9 - 9 - 9 - 4 - 1 +"
 
 $(ASAN): $(OBJS)
 	$(CXX) $(ASANFLAGS) $(CXXFLAGS) $(OBJS) -o $(ASAN)
