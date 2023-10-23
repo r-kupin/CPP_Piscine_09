@@ -16,7 +16,7 @@ NAME = PmergeMe
 ASAN = $(NAME)_asan
 WORDY = $(NAME)_wordy
 
-SRCS = 	src/main.cpp
+SRCS = 	src/main.cpp src/PmergeMe.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 
