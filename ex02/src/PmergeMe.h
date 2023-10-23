@@ -39,5 +39,6 @@ struct ComPairAble : public std::pair<T1, T2> {
 
 int FJSort(std::vector<int> &);
 int FJSort(std::list<int> &);
+int NaiveSort(std::list<int> &);
 
 #endif //EX02_PMERGEME_H

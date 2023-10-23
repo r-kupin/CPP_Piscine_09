@@ -296,3 +296,15 @@ int FJSort(std::list<int> &lst) {
 	lst = s;
 	return comparations;
 }
+
+int NaiveSort(std::list<int> &lst) {
+	comparations = 0;
+
+	std::list<int> res;
+	for (std::list<int>::iterator it = lst.begin(); it != lst.end(); ++it) {
+		order_insert(res, *it);
+	}
+	lst = res;
+
+	return comparations;
+}
