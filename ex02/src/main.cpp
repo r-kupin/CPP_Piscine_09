@@ -17,42 +17,49 @@
 
 template <typename Container>
 struct Profiler {
-	typedef void (*PTF)(Container&);
+	typedef int (*PTF)(Container&);
 
-	static double Profile(PTF sort, Container& container) {
+	static Profiler Profile(PTF sort, Container& container) {
+		int comparations;
+		
 		clock_t start_time = clock();
-		sort(container);
+		comparations = sort(container);
 		clock_t end_time = clock();
-		return (double)(end_time - start_time) / CLOCKS_PER_SEC;
+		return Profiler(
+				(double)(end_time - start_time) / CLOCKS_PER_SEC,
+				comparations);
 	}
+
+	double	time_;
+	int		comparisons_;
+	
+private:
+	Profiler(double time, int comparations) 
+	: time_(time), comparisons_(comparations) {}
 };
 
-void sort_n_compare(std::vector<int> &vec, std::list<int> &list) {
-        (void )list;
-    std::cout << "Before:\t";
-    for (std::vector<int>::iterator it = vec.begin(); it != vec.end(); ++it) {
+template <typename Container, typename Iterator>
+void sort_report(Container &cnt, const std::string &name) {
+	std::cout << "Before:\t";
+	for (Iterator it = cnt.begin(); it != cnt.end(); ++it) {
 		std::cout << std::setw(2) << *it << " ";
 	}
-    std::cout << " size " << vec.size() << std::endl;
+	std::cout << " size " << cnt.size() << std::endl;
 
-//    merge_insertion_sort(vec.begin(), vec.end());
-    (void )Profiler<std::vector<int> >::Profile(&FJSort, vec);
-//	double in_place_time = profile(&PmergeMe::FJSort, vec);
-//	double list_time = profile(&PmergeMe::FJSort, list);
+	const Profiler<Container> &vec_p =
+			Profiler<Container>::Profile(&FJSort, cnt);
 
-    std::cout << "After:\t";
-    for (std::vector<int>::iterator it = vec.begin(); it != vec.end(); ++it) {
+	std::cout << "After:\t";
+	for (Iterator it = cnt.begin(); it != cnt.end(); ++it) {
 		std::cout << std::setw(2) << *it << " ";
 	}
-	std::cout << " size " << vec.size() << std::endl;
-    std::cout << std::endl;
+	std::cout << " size " << cnt.size() << std::endl;
+	std::cout << std::endl;
 
-//    std::cout << "Time to process a range of " << vec.size() << " elements " <<
-//        "std::vector<int>\t: " << std::fixed << arr_time << " us" << std::endl;
-//    std::cout << "Time to process a range of " << vec.size() << " elements in place " <<
-//        "std::vector<int>\t: " << std::fixed << in_place_time << " us" << std::endl;
-//    std::cout << "Time to process a range of " << list.size() << " elements " <<
-//        "std::list<int>\t: " << std::fixed << list_time << " us" << std::endl;
+	std::cout << "Time to process a range of " << cnt.size() << " elements " <<
+			  name << ":\t" << std::fixed << vec_p.time_ << " us" <<
+			  " and " << vec_p.comparisons_ << " comparisons made\n" <<
+			  std::endl;
 }
 
 int     main(int ac, char **av) {
@@ -72,6 +79,9 @@ int     main(int ac, char **av) {
             return 1;
         }
     }
-    sort_n_compare(vec, list);
+	sort_report<std::vector<int>, std::vector<int>::iterator>(vec,
+															  "std::vector");
+	sort_report<std::list<int>, std::list<int>::iterator>(list,
+														  "std::list");
     return 0;
 }

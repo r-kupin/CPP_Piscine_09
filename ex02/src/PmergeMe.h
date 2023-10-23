@@ -16,17 +16,10 @@
 #include <vector>
 #include <list>
 
-typedef std::vector<int>::iterator v_iter;
-typedef std::list<int>::iterator l_iter;
-
-
-struct PMerge {
-
-};
-
 template <typename T1, typename T2>
 struct ComPairAble : public std::pair<T1, T2> {
     ComPairAble() : std::pair<T1, T2>() {}
+
     ComPairAble(T1 first, T2 second) : std::pair<T1, T2>(
             first < second ? first : second,
             second < first ?  first : second) {}
@@ -44,8 +37,8 @@ struct ComPairAble : public std::pair<T1, T2> {
     }
 };
 
-void FJSort(std::vector<int> &arr);
-void RecursiveFJSort(v_iter first, v_iter last);
+int FJSort(std::vector<int> &);
+int FJSort(std::list<int> &);
 
 //
 //////////////////////////////////////////////////////////////
